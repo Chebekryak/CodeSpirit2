@@ -1,0 +1,175 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+{% if current_user.is_authenticated %}
+    <div id='main-big-post-container' style="display: block;width: 100%;">
+        <form method="post" enctype=multipart/form-data action="/add_post" novalidate>
+            {{ form.hidden_tag() }}
+            <div id='main-post-container' class="main-add-post main-white-font-color main-news-block main-align-div" style="align-items: start;display:flex">
+                {% set user = get_user(current_user.id) %}
+                {% if not user.avatar %}
+                    <i class="fa fa-user-circle main-post-item i-post" aria-hidden="true" style="margin-left: 2%!important;margin-top: 0.515%;"></i>
+                {% else %}
+                    <img class='main-user-avatar-img' src="{{ url_for('static', filename=get_user_avatar(user.id)) }}">
+                {% endif %}
+                <input id='main-post-ask-btn' class='main-post-item main-white-font-color' type="button" value="What's new?">
+                <label for="image_input" style="margin-top: 0.2%;margin-right: 1%;margin-bottom: 0;margin-left: 1%;"><i class="fa fa-picture-o main-post-item i-post" aria-hidden="true"></i></label>
+			    <input name="image_input[]" id="image_input" type="file" accept=".png" style="display: none" multiple>
+            </div>
+            <div hidden id='main-post-bottom-panel' class="main-add-post-bottom main-white-font-color main-news-block main-align-div">
+                <div id="qa-div">
+                    <div class="main-align-div"><label for="#qa-checkbox" class="mr-2 main-post-label">Turn off com's</label><input id='qa-checkbox' value="toc" type="checkbox" name="checkbox"></div>
+                    <div class="ml-2 main-align-div"><label for="#qa-checkbox" class="mr-2 main-post-label">Post anon</label><input id='an-checkbox' value="anon" type="checkbox" name="checkbox"></div>
+                </div>
+                {{ form.text(type="textarea", id="text", class='main-hidden-crutch', value='gay') }}
+                {{ form.submit(id='main-post-btn', type="submit", onclick='replaceText()') }}
+            </div>
+            <div id="main-post-images"></div>
+        </form>
+        <div id="main-post-cancel-btn-div">
+            <input id="main-post-cancel-btn" onclick=clearImagesBtn() type='button' value="cancel">
+        </div>
+    </div>
+    <script>postClicked()</script>
+    <script>addImages()</script>
+
+    <div id="main-posts">
+        {% for post in posts %}
+            <div id='post-{{ post.id }}' class="main-post">
+                <hr>
+                <div id="main-post-header">
+                    <div id="post-user">
+                        <a href="/profile/{{ post.author }}" id="main-post-user-link">
+                            {% set user = get_user(post.author) %}
+                            {% if not user.avatar %}
+                                <i class="fa fa-user-circle main-post-item i-post main-white-font-color main-post-avatar" aria-hidden="true"></i>
+                            {% else %}
+                                <img class='main-user-avatar-img' src="{{ url_for('static', filename=get_user_avatar(user.id)) }}">
+                            {% endif %}
+                            <b class="main-font main-white-font-color main-home-user" style="margin-left: 5%">{{ get_user(post.author).name }}</b><br>
+                        </a>
+                        <div>
+                            <button id='main-post-more-btn' data-easy-toggle="#main-post-dropdown" data-easy-class="show" data-easy-rcoe data-easy-parallel>
+                                <svg style='color: #d7dce3;' width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="more_horizontal_24__Page-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="more_horizontal_24__more_horizontal_24"><path id="more_horizontal_24__Bounds" d="M24 0H0v24h24z"></path><path d="M18 10a2 2 0 012 2 2 2 0 01-2 2 2 2 0 01-2-2c0-1.1.9-2 2-2zm-6 4a2 2 0 01-2-2c0-1.1.9-2 2-2a2 2 0 012 2 2 2 0 01-2 2zm-6 0a2 2 0 01-2-2c0-1.1.9-2 2-2a2 2 0 012 2 2 2 0 01-2 2z" id="more_horizontal_24__Mask" fill="currentColor"></path></g></g></svg>
+                            </button>
+                            <div id="main-post-dropdown" class="main-post-dropdown-menu">
+                                {% if post.author == current_user.id %}
+                                    <a onclick="deletePost({{ post.id }})" class="main-dropdown-link main-delete-link" role="link">Delete</a>
+                                {% endif %}
+                                <a href="#" class="main-dropdown-link">It is not interesting</a>
+                                <a href="#" class="main-dropdown-link">Complain</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if not string_long_p(post.text) %}
+                    {% for string in post.text.split('\n') %}
+                        <b class="main-font main-white-font-color main-post-text">{{ string }}</b>
+                    {% endfor %}
+                {% elif string_long_p(post.text) == 2 %}
+                    {% for string in enu(post.text.split('\n')[:8]) %}
+                        <b class="main-post-long-text">{{ string[1] }}{% if string[0] == 7 %}<span id="points-p-{{ post.id }}" class="p-span">...</span>{% endif %}</b>
+                    {% endfor %}
+                    <a id="text-p-{{ post.id }}" style="margin-left: 3.15%;display: inherit;cursor: pointer;color: #6498d0;" onclick="moreButtonPP('{{ post.id }}')" class="main-show-all-link-p">Show all...</a>
+                    {% for string in post.text.split('\n')[8:] %}
+                        <b class="text-p-hidden-{{ post.id }} main-comment-text" style="display: none">{{ string }}</b>
+                    {% endfor %}
+                {% elif string_long_p(post.text) == 1 %}
+                    <div class='main-hidden-content-div main-post-long-text'><span class="p-span">{{ post.text[:1001] }}</span><span id="p-points-{{ post.id }}" class="p-span">...</span><br id="p-text-br-{{ post.id }}"><a id="p-text-a-{{ post.id }}" style="display: inherit;cursor: pointer;color: #6498d0;" onclick="moreButtonP('{{ post.id }}')" class="main-show-all-link">Show all...</a><span id="p-text-hidden-{{ post.id }}" class="p-span" style="display: none">{{ post.text[1001:] }}</span></div>
+                {% endif %}
+                {% if files.filter(File.post_id == post.id).first() %}
+                    <div id="main-post-files">
+                    {% for image in files.filter(File.post_id == post.id).all() %}
+                        {% if is_file(image.way) %}
+                            <img id='main-image-in-post' src="{{ image.way }}">
+                        {% else %}
+                            <img id='main-image-in-post-error' src="static/post-img/a/0.jpg">
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                <br>
+                <div id="main-post-other">
+                    <i class="fa fa-terminal" aria-hidden="true" style="color: #d7dce3;font-size: 13px;margin-right: 1%;"></i>
+                    <small class="main-font main-white-font-color">{{ post.datetime.strftime("%a, %d %b %Y %H:%M:%S GMT") }} & {{ post.likes }} likes</small>
+                </div>
+                <hr class="main-comment-hr" style="{% if post.turn_off_comments %}opacity: 0;{% endif %}">
+                {% if not post.turn_off_comments %}
+                    <div id='main-post-comments-{{ post.id }}' class="main-post-comments">
+                        {% set comment_list = sorted(comments.filter(Comment.post_id == post.id).all(), key=cl_filter, reverse=True) %}
+                        {% for comment in comment_list %}
+                            <div id='comment-{{ comment.id }}' comment_id="{{ comment.id }}" comment_liked='{{ get_CommentLike_count(comment.id) != 0 }}' class="main-comment-union {% if comment_list.index(comment) >= 3 %}hidden-comment{% endif %}">
+                                <div class="main-post-comment">
+                                    {% set user = get_user(comment.author) %}
+                                    {% if not user.avatar %}
+                                        <a href="profile/{{ comment.author }}"><i class="fa fa-user-circle main-comment-a-ava main-white-font-color i-c" aria-hidden="true"></i></a>
+                                    {% else %}
+                                        <a href="profile/{{ comment.author }}"><img class='main-user-avatar-img-c' src="{{ url_for('static', filename=get_user_avatar(user.id)) }}"></a>
+                                    {% endif %}
+                                    <div class="main-comment-data">
+                                        <div class='df-jc-sb'>
+                                                <a href="profile/{{ comment.author }}"><b class="main-comment-username main-strong">{{ get_user(comment.author).name }}</b></a>
+                                            {% if comment.author == current_user.id %}
+                                                <i id="delete-{{ comment.id }}" class="fas fa-times main-white-font-color" style="visibility: hidden; opacity: 0;" onclick="deleteComment({{ comment.id }})"></i>
+                                            {% endif %}
+                                        </div>
+                                        {% if not string_long(comment.text) %}
+                                            {% for string in comment.text.split('\n') %}
+                                                <b class="main-comment-text">{{ string }}</b>
+                                            {% endfor %}
+                                        {% elif string_long(comment.text) == 2 %}
+                                            {% for string in enu(comment.text.split('\n')[:8]) %}
+                                                <b class="main-comment-text">{{ string[1] }}{% if string[0] == 7 %}<span id="points-n-{{ comment.id }}">...</span>{% endif %}</b>
+                                            {% endfor %}
+                                            <a id="text-n-{{ comment.id }}" style="display: inherit;cursor: pointer;color: #6498d0;" onclick="moreButtonN('{{ comment.id }}')" class="main-show-all-link-n">Show all...</a>
+                                            {% for string in comment.text.split('\n')[8:] %}
+                                                <b class="text-n-hidden-{{ comment.id }} main-comment-text" style="display: none">{{ string }}</b>
+                                            {% endfor %}
+                                        {% elif string_long(comment.text) == 1 %}
+                                            <div class='main-hidden-content-div'>
+                                                <span>{{ comment.text[:201] }}</span><span id="points-{{ comment.id }}">...</span><br id="text-br-{{ comment.id }}"><a id="text-a-{{ comment.id }}" style="display: inherit;cursor: pointer;color: #6498d0;" onclick="moreButton('{{ comment.id }}')" class="main-show-all-link">Show all...</a><span id="text-hidden-{{ comment.id }}" style="display: none">{{ comment.text[201:] }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="main-comment-content">
+                                    <p style="color: #e6e9ed70;margin-bottom: 0em;font-size: 0.85em;">{{ comment.datetime.strftime("%a, %d %b %Y %H:%M:%S GMT") }}</p>
+                                    <a id='main-likes-{{ comment.id }}' class="main-likes" onclick="likeComment({{ comment.id }})" style="{% if get_CommentLike_count(comment.id) != 0 %}visibility: visible;opacity: 1;{% else %}visibility: hidden;opacity: 0;{% endif %}">
+                                        <span id="likes-{{ comment.id }}" class="main-likes-num {% if is_liked(comment.id) %}main-already-liked{% endif %}">{{ get_CommentLike_count(comment.id) if get_CommentLike_count(comment.id) else '' }}</span>
+                                        <i id='heart-{{ comment.id }}' class="fa fa-heart main-like-icon {% if is_liked(comment.id) != None %}main-already-liked{% endif %}"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% if sorted(comments.filter(Comment.post_id == post.id).all(), key=cl_filter, reverse=True)[-1] != comment %}
+                                <hr class="main-hr-for-comments {% if comment_list.index(comment) >= 3 %}hidden-comment{% endif %}">
+                            {% endif %}
+                        {% endfor %}
+                    {% if len(comment_list) >= 3 %}
+                        <a class="show-all-btn" onclick='showAllComments({{ post.id }})'>Show all comment</a>
+                    {% endif %}
+                    </div>
+                    <div id="main-post-write-comments">
+                        <form id='comment-form-{{ post.id }}' class='comment-form' _post='{{ post.id }}' method="post" enctype=multipart/form-data action="/add_comment/{{ post.id }}" novalidate>
+                            {{ comment_form.hidden_tag() }}
+                            {{ comment_form.text(id='comments-hidden-input-' + str(post.id), type='hidden', post=post.id) }}
+                            <div class="main-flex">
+                                {% set user = get_user(current_user.id) %}
+                                {% if not user.avatar %}
+                                    <i class="fa fa-user-circle main-comment-ava main-white-font-color" aria-hidden="true"></i>
+                                {% else %}
+                                    <img class='main-user-avatar-img-c main-comment-ava' src="{{ url_for('static', filename=get_user_avatar(user.id)) }}">
+                                {% endif %}
+                                <div contenteditable="true" id='comment-post-{{ post.id }}' class="main-post-comment-input" placeholder="write comment..."></div>
+                                {{ form.submit(id='main-send-comment-btn', type="submit", onclick='replaceCommentText("' + str(post.id) + '")', value="send") }}
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endif %}
+{% endblock %}

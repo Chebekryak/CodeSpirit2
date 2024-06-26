@@ -1,0 +1,42 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div class="main-registration">
+    <h1 class="my-4 main-registration-title">Registration</h1>
+    <form method="post" class="main-registration-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group main-form-group">
+            {{ form.name(id="name", class='main-registration-input', placeholder='Login') }}
+            {% for error in form.name.errors %}
+                <span class="main-registration-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group main-form-group">
+            {{ form.email(id="email", class='main-registration-input', placeholder="Email") }}
+            {% for error in form.email.errors %}
+                <span class="main-registration-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group main-form-group">
+            {{ form.password(id="password", class='main-registration-input', placeholder="Password") }}
+            {% for error in form.password.errors %}
+                <span class="main-registration-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group main-form-group">
+            {{ form.confirm_password(id="confirm_password", class='main-registration-input', placeholder="Confirm password") }}
+            {% for error in form.confirm_password.errors %}
+                <span class="main-registration-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group main-form-group">
+            {{ form.description(type="textarea", id="description", class='py-2 main-registration-input main-registration-description', placeholder="Description") }}
+        </div>
+        {% if message != "" %}
+            <span class="main-registration-error" style="margin-top: 0;margin-bottom: 1rem;">{{ message }}</span>
+        {% endif %}
+        {{ form.submit(class='main-registration-button') }}
+    </form>
+</div>
+
+{% endblock %}
