@@ -4,6 +4,7 @@ from data.forms import *
 from flask_login import login_required, current_user
 from data.request_tools import *
 from flask import render_template
+from PIL import Image
 import flask
 import datetime
 import os
@@ -150,7 +151,6 @@ def upload_avatar():
         filename = get_filename(file.filename)
         file.save(os.path.join(flask.current_app.config['AVATAR_FOLDER'], filename))
         full_fileway = flask.current_app.config['AVATAR_FOLDER'] + '/' + filename
-        from PIL import Image
 
         im = Image.open(full_fileway)
         im_new = crop_center(im, 460, 460)
