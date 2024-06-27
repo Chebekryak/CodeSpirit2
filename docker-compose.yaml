@@ -1,0 +1,12 @@
+services:
+  application:
+    container_name: application
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    command: bash -c "python main.py"

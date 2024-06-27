@@ -13,7 +13,7 @@ from data import db_session
 blueprint = flask.Blueprint(
     'main_page', __name__,
     template_folder='templates',
-    static_folder="static"
+    static_folder="static",
 )
 
 

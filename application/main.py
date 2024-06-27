@@ -5,9 +5,12 @@ from data.__all_models import *
 import data.__all_models
 from inspect import isclass
 from pages import home, q_and_a, authentication, chats
+from dotenv import load_dotenv
 import configparser
+import os
 
 
+load_dotenv()
 app = Flask(__name__, static_folder="static")
 config = configparser.ConfigParser()
 config.read('static/config.ini')
@@ -60,7 +63,7 @@ def main():
     create_TypeObj()
     create_Notification_type()
     print('/__server_working__/')
-    app.run()
+    app.run(host=os.getenv("HOST"), port=int(os.getenv("PORT")))
 
 
 if __name__ == '__main__':
